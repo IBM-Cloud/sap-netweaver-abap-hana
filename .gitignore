@@ -1,5 +1,0 @@
-.terraform*
-#terraform*
-*.pem
-*.plan
-*.migrate
