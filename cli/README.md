@@ -31,7 +31,7 @@ For HANA DB
 The VSIs should have least two SSH keys configured to access as root user and the following storage volumes created for DB and SAP APP VSI:
 
 HANA DB VSI Disks:
-- 3 x 500 GB disks with 10000 IOPS - DATA
+- 3 x 500 GB disks with 10 IOPS / GB - DATA
 
 SAP Netweaver APP VSI Disks:
 - 1 x 40 GB disk with 10 IOPS / GB - SWAP
