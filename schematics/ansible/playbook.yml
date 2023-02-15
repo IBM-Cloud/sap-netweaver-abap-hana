@@ -1,0 +1,5 @@
+- name: saphana.yml
+  ansible.builtin.import_playbook: saphana.yml
+
+- name: nwapp.yml
+  ansible.builtin.import_playbook: nwapp.yml

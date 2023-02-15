@@ -1,10 +1,10 @@
-# SAP Netweaver on HANA DB Stack Deployment
+# SAP Netweaver on HANA DB Stack Deployment using IBM Schematics
 
 
 ## Description
-This automation solution is designed for the deployment of **SAP Netweaver on HANA DB Stack**. The SAP solution will be deployed on top of one of the following Operating Systems: SUSE Linux Enterprise Server 15 SP 3 for SAP, Red Hat Enterprise Linux 8.4 for SAP, Red Hat Enterprise Linux 7.6 for SAP in an existing IBM Cloud Gen2 VPC, using an existing bastion host with secure remote SSH access.
+This automation solution is designed for the deployment of **SAP Netweaver on HANA DB Stack** using IBM Cloud Schematics. The SAP solution will be deployed on top of one of the following Operating Systems: SUSE Linux Enterprise Server 15 SP 3 for SAP, Red Hat Enterprise Linux 8.4 for SAP, Red Hat Enterprise Linux 7.6 for SAP in an existing IBM Cloud Gen2 VPC, using an existing bastion host with secure remote SSH access.
 
-The solution is based on Terraform  and Ansible playbooks and it is implementing a 'reasonable' set of best practices for SAP VSI host configuration.
+The solution is based on Terraform remote-exec and Ansible playbooks executed by Schematics and it is implementing a 'reasonable' set of best practices for SAP VSI host configuration.
 
 **It contains:**
 - Terraform scripts for the deployment of two VSIs, in an EXISTING VPC, with Subnet and Security Group. The VSIs are intended to be used: one for the data base instance and the other for the application instance.
@@ -39,7 +39,7 @@ SAP APPs VSI Disks:
 - 1 x 128 GB disk with 10 IOPS / GB - DATA
 
 ## IBM Cloud API Key
-The IBM Cloud API Key should be provided as input value of type sensitive for "ibmcloud_api_key" variable.
+The IBM Cloud API Key should be provided as input value of type sensitive for "ibmcloud_api_key" variable, in `IBM Schematics -> Workspaces -> <Workspace name> -> Settings` menu.
 The IBM Cloud API Key can be created [here](https://cloud.ibm.com/iam/apikeys).
 
 ## Input parameters
@@ -138,10 +138,43 @@ The Security Rules inherited from BASTION deployment are the following:
  - `versions.tf` - contains the minimum required versions for terraform and IBM Cloud provider.
 
 
-### Deployment methods:
+## Steps to follow:
 
-- [SAP Netweaver on HANA DB Stack Deployment using IBM Schematics](https://github.com/IBM-Cloud/sap-netweaver-abap-hana/tree/main/schematics)
-- [SAP Netweaver on HANA DB Stack Deployment using Terraform CLI](https://github.com/IBM-Cloud/sap-netweaver-abap-hana/tree/main/cli)
+1.  Make sure that you have the [required IBM Cloud IAM
+    permissions](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-user-permissions-for-vpc-resources) to
+    create and work with VPC infrastructure and you are [assigned the
+    correct
+    permissions](https://cloud.ibm.com/docs/schematics?topic=schematics-access) to
+    create the workspace in Schematics and deploy resources.
+2.  [Generate an SSH
+    key](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys).
+    The SSH key is required to access the provisioned VPC virtual server
+    instances via the bastion host. After you have created your SSH key,
+    make sure to [upload this SSH key to your IBM Cloud
+    account](https://cloud.ibm.com/docs/vpc-on-classic-vsi?topic=vpc-on-classic-vsi-managing-ssh-keys#managing-ssh-keys-with-ibm-cloud-console) in
+    the VPC region and resource group where you want to deploy the SAP solution
+3.  Create the Schematics workspace:
+    1.  From the IBM Cloud menu
+    select [Schematics](https://cloud.ibm.com/schematics/overview).
+       - Click Create a workspace.   
+       - Enter a name for your workspace.   
+       - Click Create to create your workspace.
+    2.  On the workspace **Settings** page, enter the URL of this solution in the Schematics examples Github repository.
+     - Select the latest Terraform version.
+     - Click **Save template information**.
+     - In the **Input variables** section, review the default input variables and provide alternatives if desired.
+    - Click **Save changes**.
+
+4.  From the workspace **Settings** page, click **Generate plan** 
+5.  Click **View log** to review the log files of your Terraform
+    execution plan.
+6.  Apply your Terraform template by clicking **Apply plan**.
+7.  Review the log file to ensure that no errors occurred during the
+    provisioning, modification, or deletion process.
+
+The output of the Schematics Apply Plan will list the public/private IP addresses
+of the VSI host, the hostname and the VPC.  
+
 
 ### Related links:
 

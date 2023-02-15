@@ -141,33 +141,22 @@ hana_main_password | HANA system main password | <ul><li>It must be 8 to 14 char
 
 ## VPC Configuration
 
-The scripts create a new VPC with Subnet, Security Group and Security rules.
-If you want to use an existing VPC with Subnet, Security Group and Security rules use the `terraform/main.tf` file as below and add the names to `input.auto.tfvars`
-
-```shell
-module "vpc" {
-# source		= "./modules/vpc"   		# Uncomment only this line for creating a NEW VPC #
-  source		= "./modules/vpc/existing"	# Uncomment only this line to use an EXISTING VPC #
-
- ```
-
-The Security Rules are the following:
-- Allow all traffic in the Security group
-- Allow all outbound traffic
-- Allow inbound DNS traffic (UDP port 53)
-- Allow inbound SSH traffic (TCP port 22)
-
+The Security Rules inherited in case that it is used an SAP BASTION deployment:
+- Allow all traffic in the Security group for private networks.
+- Allow outbound traffic  (ALL for port 53, TCP for ports 80, 443, 8443)
+- Allow inbound SSH traffic (TCP for port 22) from IBM Schematics Servers.
+  
 ## Files description and structure:
  - `modules` - directory containing the terraform modules
  - `input.auto.tfvars` - contains the variables that will need to be edited by the user to customize the solution
+ - `integration.tf` - contains the integration code that brings the SAP variabiles from Terraform to Ansible.
  - `main.tf` - contains the configuration of the VSI for SAP single tier deployment.
- - `output.tf` - contains the code for the information to be displayed after the VSI is created (Hostname, Private IP, Public IP)
  - `provider.tf` - contains the IBM Cloud Provider data in order to run `terraform init` command.
- - `terraform.tfvars` - contains the IBM Cloud API key referenced in `provider.tf`
  - `variables.tf` - contains variables for the VPC and VSI
  - `versions.tf` - contains the minimum required versions for terraform and IBM Cloud provider.
+ - `output.tf` - contains the code for the information to be displayed after the VSI is created (Hostname, Private IP, Public IP)
 
-## Steps to reproduce:
+## Steps to follow:
 
 For initializing terraform:
 
@@ -178,17 +167,27 @@ terraform init
 For planning phase:
 
 ```shell
-terraform plan
+terraform plan --out plan1
+# you will be asked for the following sensitive variables: 'ibmcloud_api_key', 'sap_main_password' and 'hana_main_password'.
 ```
 
 For apply phase:
 
 ```shell
-terraform apply
+terraform apply "plan1"
 ```
 
 For destroy:
 
 ```shell
 terraform destroy
+# you will be asked for the following sensitive variables as a destroy confirmation phase:
+'ibmcloud_api_key', 'sap_main_password' and 'hana_main_password'.
 ```
+
+### Related links:
+
+- [See how to create a BASTION/STORAGE VSI for SAP in IBM Schematics](https://github.com/IBM-Cloud/sap-bastion-setup)
+- [Securely Access Remote Instances with a Bastion Host](https://www.ibm.com/cloud/blog/tutorial-securely-access-remote-instances-with-a-bastion-host)
+- [VPNs for VPC overview: Site-to-site gateways and Client-to-site servers.](https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-overview)
+
