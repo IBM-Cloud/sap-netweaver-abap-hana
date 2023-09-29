@@ -1,58 +1,58 @@
-variable "kit_saphana_file" {
+variable "KIT_SAPHANA_FILE" {
 	type		= string
 	description = "kit_saphana_file"
 	default		= "51055299.ZIP"
 }
 
-variable "kit_sapcar_file" {
+variable "KIT_SAPCAR_FILE" {
 	type		= string
-	description = "kit_sapcar_file"
+	description = "KIT_SAPCAR_FILE"
 	default		= "SAPCAR_1010-70006178.EXE"
 }
 
-variable "kit_swpm_file" {
+variable "KIT_SWPM_FILE" {
 	type		= string
-	description = "kit_swpm_file"
+	description = "KIT_SWPM_FILE"
 	default		= "SWPM20SP09_4-80003424.SAR"
 }
 
-variable "kit_sapexe_file" {
+variable "KIT_SAPEXE_FILE" {
 	type		= string
-	description = "kit_sapexe_file"
+	description = "KIT_SAPEXE_FILE"
 	default		= "SAPEXE_400-80004393.SAR"
 }
 
-variable "kit_sapexedb_file" {
+variable "KIT_SAPEXEDB_FILE" {
 	type		= string
-	description = "kit_sapexedb_file"
+	description = "KIT_SAPEXEDB_FILE"
 	default		= "SAPEXEDB_400-80004392.SAR"
 }
 
-variable "kit_igsexe_file" {
+variable "KIT_IGSEXE_FILE" {
 	type		= string
-	description = "kit_igsexe_file"
+	description = "KIT_IGSEXE_FILE"
 	default		= "igsexe_13-80003187.sar"
 }
 
-variable "kit_igshelper_file" {
+variable "KIT_IGSHELPER_FILE" {
 	type		= string
-	description = "kit_igshelper_file"
+	description = "KIT_IGSHELPER_FILE"
 	default		= "igshelper_17-10010245.sar"
 }
 
-variable "kit_saphotagent_file" {
+variable "KIT_SAPHOSTAGENT_FILE" {
 	type		= string
-	description = "kit_saphotagent_file"
+	description = "KIT_SAPHOSTAGENT_FILE"
 	default		= "SAPHOSTAGENT51_51-20009394.SAR"
 }
 
-variable "kit_hdbclient_file" {
+variable "KIT_HDBCLIENT_FILE" {
 	type		= string
-	description = "kit_hdbclient_file"
+	description = "KIT_HDBCLIENT_FILE"
 	default		= "IMDB_CLIENT20_009_28-80002082.SAR"
 }
 
-variable "kit_nwhana_export" {
+variable "KIT_NWHANA_EXPORT" {
 	type		= string
 	description = "kit_nwhana_export"
 	default		= "/BW4HANA/export"

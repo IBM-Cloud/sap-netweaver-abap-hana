@@ -1,43 +1,54 @@
 module "pre-init-schematics" {
   source  = "./modules/pre-init"
-  count = (var.private_ssh_key == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 0 : 1)
+  count = (var.PRIVATE_SSH_KEY == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 0 : 1)
   ID_RSA_FILE_PATH = var.ID_RSA_FILE_PATH
-  private_ssh_key = var.private_ssh_key
+  PRIVATE_SSH_KEY = var.PRIVATE_SSH_KEY
 }
 
 
 module "pre-init-cli" {
   source  = "./modules/pre-init/cli"
-  count = (var.private_ssh_key == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 1 : 0)
+  count = (var.PRIVATE_SSH_KEY == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 1 : 0)
   ID_RSA_FILE_PATH = var.ID_RSA_FILE_PATH
-  kit_hdbclient_file=var.kit_hdbclient_file
-  kit_saphotagent_file=var.kit_saphotagent_file
-  kit_igshelper_file=var.kit_igshelper_file
-  kit_igsexe_file=var.kit_igsexe_file
-  kit_sapexedb_file=var.kit_sapexedb_file
-  kit_sapexe_file=var.kit_sapexe_file
-  kit_swpm_file=var.kit_swpm_file
-  kit_sapcar_file=var.kit_sapcar_file
-  kit_saphana_file=var.kit_saphana_file
-  kit_nwhana_export=var.kit_nwhana_export
+  KIT_SAPCAR_FILE = var.KIT_SAPCAR_FILE
+  KIT_SWPM_FILE = var.KIT_SWPM_FILE
+  KIT_SAPEXE_FILE = var.KIT_SAPEXE_FILE
+  KIT_SAPEXEDB_FILE  = var.KIT_SAPEXEDB_FILE
+  KIT_IGSEXE_FILE = var.KIT_IGSEXE_FILE
+  KIT_IGSHELPER_FILE = var.KIT_IGSHELPER_FILE
+  KIT_SAPHOSTAGENT_FILE = var.KIT_SAPHOSTAGENT_FILE
+  KIT_HDBCLIENT_FILE = var.KIT_HDBCLIENT_FILE
+  KIT_SAPHANA_FILE=var.KIT_SAPHANA_FILE
+  KIT_NWHANA_EXPORT=var.KIT_NWHANA_EXPORT
 }
 
 module "precheck-ssh-exec" {
   source  = "./modules/precheck-ssh-exec"
-  count = (var.private_ssh_key == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 0 : 1)
+  count = (var.PRIVATE_SSH_KEY == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 0 : 1)
   depends_on	= [ module.pre-init-schematics ]
   BASTION_FLOATING_IP = var.BASTION_FLOATING_IP
   ID_RSA_FILE_PATH = var.ID_RSA_FILE_PATH
-  private_ssh_key = var.private_ssh_key
-  HOSTNAME  = var.DB-HOSTNAME
+  PRIVATE_SSH_KEY = var.PRIVATE_SSH_KEY
+  HOSTNAME  = var.DB_HOSTNAME
   SECURITY_GROUP = var.SECURITY_GROUP
   
+}
+
+module "activity-tracker" {
+  source  = "./modules/activity-tracker"
+  depends_on = [ module.precheck-ssh-exec ]
+  RESOURCE_GROUP = var.RESOURCE_GROUP
+  ATR_PROVISION = var.ATR_PROVISION
+  REGION = var.REGION
+  ATR_NAME = var.ATR_NAME
+  ATR_PLAN = var.ATR_PLAN
+  ATR_TAGS = var.ATR_TAGS
 }
 
 
 module "vpc-subnet" {
   source  = "./modules/vpc/subnet"
-  depends_on	= [ module.precheck-ssh-exec ]
+  depends_on = [ module.activity-tracker ]
   ZONE  = var.ZONE
   VPC = var.VPC
   SECURITY_GROUP = var.SECURITY_GROUP
@@ -52,9 +63,9 @@ module "db-vsi" {
   SECURITY_GROUP = var.SECURITY_GROUP
   SUBNET		= var.SUBNET
   RESOURCE_GROUP = var.RESOURCE_GROUP
-  HOSTNAME		= var.DB-HOSTNAME
-  PROFILE		= var.DB-PROFILE
-  IMAGE			= var.DB-IMAGE
+  HOSTNAME		= var.DB_HOSTNAME
+  PROFILE		= var.DB_PROFILE
+  IMAGE			= var.DB_IMAGE
   SSH_KEYS		= var.SSH_KEYS
   VOLUME_SIZES	= [ "500" , "500" , "500" ]
   VOL_PROFILE	= "10iops-tier"
@@ -69,25 +80,24 @@ module "app-vsi" {
   SECURITY_GROUP = var.SECURITY_GROUP
   SUBNET		= var.SUBNET
   RESOURCE_GROUP = var.RESOURCE_GROUP
-  HOSTNAME		= var.APP-HOSTNAME
-  PROFILE		= var.APP-PROFILE
-  IMAGE			= var.APP-IMAGE
+  HOSTNAME		= var.APP_HOSTNAME
+  PROFILE		= var.APP_PROFILE
+  IMAGE			= var.APP_IMAGE
   SSH_KEYS		= var.SSH_KEYS
   VOLUME_SIZES	= [ "40" , "128" ]
   VOL_PROFILE	= "10iops-tier"
 
 }
 
-
 module "app-ansible-exec-schematics" {
   source  = "./modules/ansible-exec"
   depends_on	= [ module.db-vsi , module.app-vsi , local_file.ansible_inventory , local_file.db_ansible_saphana-vars , local_file.app_ansible_nwapp-vars  ]
-  count = (var.private_ssh_key == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 0 : 1)
+  count = (var.PRIVATE_SSH_KEY == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 0 : 1)
   IP = data.ibm_is_instance.app-vsi-1.primary_network_interface[0].primary_ip[0].address
   PLAYBOOK = "sap-abap-hana.yml"
   BASTION_FLOATING_IP = var.BASTION_FLOATING_IP
   ID_RSA_FILE_PATH = var.ID_RSA_FILE_PATH
-  private_ssh_key = var.private_ssh_key
+  PRIVATE_SSH_KEY = var.PRIVATE_SSH_KEY
   
 }
 
@@ -95,9 +105,9 @@ module "app-ansible-exec-schematics" {
 module "ansible-exec-cli" {
   source  = "./modules/ansible-exec/cli"
   depends_on	= [ module.db-vsi , module.app-vsi , local_file.ansible_inventory , local_file.db_ansible_saphana-vars , local_file.app_ansible_nwapp-vars, module.pre-init-cli]
-  count = (var.private_ssh_key == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 1 : 0)
+  count = (var.PRIVATE_SSH_KEY == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 1 : 0)
   IP = data.ibm_is_instance.app-vsi-1.primary_network_interface[0].primary_ip[0].address
   ID_RSA_FILE_PATH = var.ID_RSA_FILE_PATH
-  sap_main_password = var.sap_main_password
+  sap_main_password = var.SAP_MAIN_PASSWORD
   PLAYBOOK = "sap-abap-hana.yml"
 }

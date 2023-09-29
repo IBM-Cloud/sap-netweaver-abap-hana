@@ -1,6 +1,6 @@
 locals {
   folder_list = [
-    "${var.kit_nwhana_export}"
+    "${var.KIT_NWHANA_EXPORT}"
   ]
 }
 

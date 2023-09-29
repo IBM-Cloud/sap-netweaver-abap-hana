@@ -2,7 +2,14 @@
 
 
 ## Description
-This automation solution is designed for the deployment of **SAP Netweaver on HANA DB Stack**. The SAP solution will be deployed on top of one of the following Operating Systems: SUSE Linux Enterprise Server 15 SP 3 for SAP, SUSE Linux Enterprise Server 15 SP 4 for SAP,  Red Hat Enterprise Linux 8.4 for SAP, Red Hat Enterprise Linux 8.6 for SAP in an existing IBM Cloud Gen2 VPC, using an existing bastion host with secure remote SSH access.
+This automation solution is designed for the deployment of **SAP Netweaver on HANA DB Stack**. The SAP solution will be deployed on top of one of the following Operating Systems: **SUSE Linux Enterprise Server 15 SP 4 for SAP, SUSE Linux Enterprise Server 15 SP 3 for SAP,  Red Hat Enterprise Linux 8.6 for SAP, Red Hat Enterprise Linux 8.4 for SAP** in an existing IBM Cloud Gen2 VPC, using an existing bastion host with secure remote SSH access.
+
+IBM Cloud Activity Tracker service collects and stores audit records for API calls made to resources that run in the IBM Cloud. It can be used to monitor the activity of your IBM Cloud account, investigate abnormal activity and critical actions, and comply with regulatory audit requirements. In addition, you can be alerted on actions as they happen. For more information, see [IBM Cloud Activity Tracker](https://cloud.ibm.com/docs/activity-tracker?topic=activity-tracker-getting-started#gs_ov).
+
+In order to track the events specific to the resources deployed by this solution, the IBM Cloud Activity Tracker to be used should be specified. In case there is no IBM Cloud Activity Tracker instance available in the same region as the IBM Cloud resources to be deployed, the automation will create a new one, based on the provided data.
+Note: If you choose the automation to create a new activity plan at the same time with the deployment of the SAP solution and, later, you want to remove the IBM Cloud resources specific to the SAP solution, by using the automation, the activity planner will be removed as well.
+
+The available pricing plans for an IBM Cloud Activity Tracker instance can be found [here](https://cloud.ibm.com/docs/activity-tracker?topic=activity-tracker-service_plan#service_plan).
 
 ## Contents:
 
@@ -24,16 +31,16 @@ SAP Netweaver installation media used for this deployment is the default one for
 The VSI OS images that are supported for this solution are the following:
 
 For Netweaver primary application server:
-- ibm-redhat-8-4-amd64-sap-applications-2
 - ibm-redhat-8-6-amd64-sap-applications-2
-- ibm-sles-15-3-amd64-sap-applications-2
+- ibm-redhat-8-4-amd64-sap-applications-2
 - ibm-sles-15-4-amd64-sap-applications-3
+- ibm-sles-15-3-amd64-sap-applications-2
 
 For HANA DB:
-- ibm-redhat-8-4-amd64-sap-hana-2
 - ibm-redhat-8-6-amd64-sap-hana-2
-- ibm-sles-15-3-amd64-sap-hana-2
+- ibm-redhat-8-4-amd64-sap-hana-2
 - ibm-sles-15-4-amd64-sap-hana-1
+- ibm-sles-15-3-amd64-sap-hana-2
 
 The VSIs should have least two SSH keys configured to access as root user and the following storage volumes created for DB and SAP APP VSI:The following storage volumes are creating during the provisioning:
 
@@ -57,7 +64,7 @@ The Security Rules inherited from BASTION deployment are the following:
 
  - `modules` - directory containing the terraform modules
  - `main.tf` - contains the configuration of the VSI for the deployment of the current SAP solution.
- - `output.tf` - contains the code for the information to be displayed after the VSI is created (Hostname, Private IP)
+ - `output.tf` - contains the code for the information to be displayed after the VSI is created (Hostname, Private IP, Activity Tracker Name).
  - `integration*.tf` - contains the integration code that makes the SAP variables from Terraform available to Ansible.
  - `provider.tf` - contains the IBM Cloud Provider data in order to run `terraform init` command.
  - `terraform.tfvars` - contains the IBM Cloud API key referenced in `provider.tf` (dynamically generated)
@@ -70,27 +77,26 @@ The Security Rules inherited from BASTION deployment are the following:
 The solution is based on Terraform remote-exec and Ansible playbooks executed by Schematics and it is implementing a 'reasonable' set of best practices for SAP VSI host configuration.
 
 **It contains:**
-- Terraform scripts for the deployment of two VSIs, in an EXISTING VPC, with Subnet and Security Group. The VSIs are intended to be used: one for the data base instance and the other for the application instance.
-- The Terraform version used for deployment should be >= 1.3.6. Note: The deployment was tested with Terraform 1.3.6
+- Terraform scripts for the deployment of two VSIs, in an EXISTING VPC, with Subnet and Security Group. The VSIs are intended to be used: one for the data base instance and the other for the application instance. The automation has support for the following versions: Terraform >= 1.3.6 and IBM Cloud provider for Terraform >= 1.41.1.  Note: The deployment was tested with Terraform 1.3.6
 - Bash scripts used for the checking of the prerequisites required by SAP VSIs deployment and for the integration into a single step in IBM Schematics GUI of the VSI provisioning and the **SAP Netweaver on HANA DB Stack** installation.
 - Ansible scripts to configure SAP Netweaver primary application server and a HANA 2.0 node.
 Please note that Ansible is started by Terraform and must be available on the same host.
 
 
 ## IBM Cloud API Key
-The IBM Cloud API Key should be provided as input value of type sensitive for "ibmcloud_api_key" variable, in `IBM Schematics -> Workspaces -> <Workspace name> -> Settings` menu.
+The IBM Cloud API Key should be provided as input value of type sensitive for "IBMCLOUD_API_KEY" variable, in `IBM Schematics -> Workspaces -> <Workspace name> -> Settings` menu.
 The IBM Cloud API Key can be created [here](https://cloud.ibm.com/iam/apikeys).
 
 ## Input parameters
-The following parameters can be set in the Schematics workspace: VPC, Subnet, Security group, Resource group, Hostname, Profile, Image, SSH Keys and your SAP system configuration variables, as below:
+The following parameters can be set in the Schematics workspace: VPC, Subnet, Security group, Resource group, Hostname, Profile, Image, SSH Keys, Activity Tracker variables, and your SAP system configuration variables, as below:
 
 **VSI input parameters:**
 
 Parameter | Description
 ----------|------------
-ibmcloud_api_key | IBM Cloud API key (Sensitive* value).
-ID_RSA_FILE_PATH | The file path for private_ssh_key will be automatically generated by default. If it is changed, it must contain the relative path from git repo folders.<br /> Default value: "ansible/id_rsa".
-private_ssh_key | Input your id_rsa private key pair content in OpenSSH format (Sensitive* value). This private key should be used only during the terraform provisioning and it is recommended to be changed after the SAP deployment.
+IBMCLOUD_API_KEY | IBM Cloud API key (Sensitive* value).
+ID_RSA_FILE_PATH | The file path for PRIVATE_SSH_KEY will be automatically generated by default. If it is changed, it must contain the relative path from git repo folders.<br /> Default value: "ansible/id_rsa".
+PRIVATE_SSH_KEY | Input your id_rsa private key pair content in OpenSSH format (Sensitive* value). This private key should be used only during the terraform provisioning and it is recommended to be changed after the SAP deployment.
 SSH_KEYS | List of SSH Keys UUIDs that are allowed to SSH as root to the VSI. Can contain one or more IDs. The list of SSH Keys is available [here](https://cloud.ibm.com/vpc-ext/compute/sshKeys). <br /> Sample input (use your own SSH UUIDs from IBM Cloud):<br /> [ "r010-57bfc315-f9e5-46bf-bf61-d87a24a9ce7a" , "r010-3fcd9fe7-d4a7-41ce-8bb3-d96e936b2c7e" ]
 BASTION_FLOATING_IP | The FLOATING IP from the Bastion Server.
 RESOURCE_GROUP | The name of an EXISTING Resource Group for VSIs and Volumes resources.  <br /> Default value: "Default". The list of Resource Groups is available [here](https://cloud.ibm.com/account/resource-groups).
@@ -99,38 +105,47 @@ ZONE | The cloud zone where to deploy the solution. <br /> Sample value: eu-de-2
 VPC | The name of an EXISTING VPC. The list of VPCs is available [here](https://cloud.ibm.com/vpc-ext/network/vpcs)
 SUBNET | The name of an EXISTING Subnet. The list of Subnets is available [here](https://cloud.ibm.com/vpc-ext/network/subnets). 
 SECURITY_GROUP | The name of an EXISTING Security group. The list of Security Groups is available [here](https://cloud.ibm.com/vpc-ext/network/securityGroups). 
-DB-HOSTNAME | The Hostname for the HANA VSI. The hostname should be up to 13 characters as required by SAP.  For more information on rules regarding hostnames for SAP systems, check [SAP Note 611361: Hostnames of SAP ABAP Platform servers](https://launchpad.support.sap.com/#/notes/%20611361)
-DB-PROFILE |  The instance profile used for the HANA VSI. A list of profiles is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) <br>  For more information about supported DB/OS and IBM Gen 2 Virtual Server Instances (VSI), check [SAP Note 2927211: SAP Applications on IBM Virtual Private Cloud](https://launchpad.support.sap.com/#/notes/2927211) <br /> Default value: "mx2-16x128"
-DB-IMAGE | The OS image used for HANA VSI (See Obs*). A list of images is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-about-images).<br /> Default value: ibm-redhat-8-6-amd64-sap-hana-2
-APP-HOSTNAME | The Hostname for the SAP Application VSI. The hostname should be up to 13 characters as required by SAP.  For more information on rules regarding hostnames for SAP systems, check [SAP Note 611361: Hostnames of SAP ABAP Platform servers](https://launchpad.support.sap.com/#/notes/%20611361)
-APP-PROFILE |  The instance profile used for SAP Application VSI. A list of profiles is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) <br>  For more information about supported DB/OS and IBM Gen 2 Virtual Server Instances (VSI), check [SAP Note 2927211: SAP Applications on IBM Virtual Private Cloud](https://launchpad.support.sap.com/#/notes/2927211) <br /> Default value: "bx2-4x16"
-APP-IMAGE | The OS image used for SAP Application VSI (See Obs*). A list of images is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-about-images).<br /> Default value: ibm-redhat-8-6-amd64-sap-applications-2
+DB_HOSTNAME | The Hostname for the HANA VSI. The hostname should be up to 13 characters as required by SAP.  For more information on rules regarding hostnames for SAP systems, check [SAP Note 611361: Hostnames of SAP ABAP Platform servers](https://launchpad.support.sap.com/#/notes/%20611361)
+DB_PROFILE |  The instance profile used for the HANA VSI. A list of profiles is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) <br>  For more information about supported DB/OS and IBM Gen 2 Virtual Server Instances (VSI), check [SAP Note 2927211: SAP Applications on IBM Virtual Private Cloud](https://launchpad.support.sap.com/#/notes/2927211) <br /> Default value: "mx2-16x128"
+DB_IMAGE | The OS image used for HANA VSI (See Obs*). A list of images is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-about-images).<br /> Default value: ibm-redhat-8-6-amd64-sap-hana-2
+APP_HOSTNAME | The Hostname for the SAP Application VSI. The hostname should be up to 13 characters as required by SAP.  For more information on rules regarding hostnames for SAP systems, check [SAP Note 611361: Hostnames of SAP ABAP Platform servers](https://launchpad.support.sap.com/#/notes/%20611361)
+APP_PROFILE |  The instance profile used for SAP Application VSI. A list of profiles is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) <br>  For more information about supported DB/OS and IBM Gen 2 Virtual Server Instances (VSI), check [SAP Note 2927211: SAP Applications on IBM Virtual Private Cloud](https://launchpad.support.sap.com/#/notes/2927211) <br /> Default value: "bx2-4x16"
+APP_IMAGE | The OS image used for SAP Application VSI (See Obs*). A list of images is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-about-images).<br /> Default value: ibm-redhat-8-6-amd64-sap-applications-2
+
+**Activity Tracker input parameters:**
+
+Parameter | Description
+----------|------------
+ATR_NAME | The name of the Activity Tracker instance to be created or the name of an existent Activity Tracker instance, in the same region chosen for SAP system deployment.
+ATR_PROVISION | Enables (ATR_PROVISION=true) or not (ATR_PROVISION=false) the provisioning of a new Activity Tracker instance. <br /> Default value: true
+ATR_PLAN | Mandatory only if ATR_PROVISION is set to true.  The list of service plan is available [here](https://cloud.ibm.com/docs/activity-tracker?topic=activity-tracker-service_plan#service_plan). <br /> Default value: "lite"
+ATR_TAGS | Optional parameter. A list of user tags associated with the activity tracker instance.
 
 
 **SAP input parameters:**
 
 Parameter | Description | Requirements
 ----------|-------------|-------------
-hana_sid | The SAP system ID identifies the SAP HANA system.<br /> _(See Obs.*)_ | <ul><li>Consists of exactly three alphanumeric characters</li><li>Has a letter for the first character</li><li>Does not include any of the reserved IDs listed in SAP Note 1979280</li></ul>|
-hana_sysno | Specifies the instance number of the SAP HANA system| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
-hana_main_password | Common password for all users that are created during the installation. _(See Obs.*)_ | <ul><li>It must be 8 to 14 characters long</li><li>It must consist of at least one digit (0-9), one lowercase letter (a-z), and one uppercase letter (A-Z).</li><li>It can only contain the following characters: a-z, A-Z, 0-9, !, @, #, $, _</li><li>It must not start with a digit or an underscore ( _ )</li></ul> <br /> (Sensitive* value)
-hana_system_usage  | System Usage | Default: custom<br> Valid values: production, test, development, custom
-hana_components | SAP HANA Components | Default: server<br> Valid values: all, client, es, ets, lcapps, server, smartda, streaming, rdsync, xs, studio, afl, sca, sop, eml, rme, rtl, trp
-kit_saphana_file | Path to SAP HANA ZIP file.<br /> _(See Obs.*)_ | As downloaded from SAP Support Portal.<br /> Default: /storage/HANADB/51055299.ZIP
-sap_sid | The SAP system ID <SAPSID> identifies the entire SAP system.<br /> _(See Obs.*)_ | <ul><li>Consists of exactly three alphanumeric characters</li><li>Has a letter for the first character</li><li>Does not include any of the reserved IDs listed in SAP Note 1979280</li></ul>
-sap_ascs_instance_number | Technical identifier for internal processes of ASCS| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
-sap_ci_instance_number | Technical identifier for internal processes of CI| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
-sap_main_password | Common password for all users that are created during the installation.<br /> _(See Obs.*)_ | <ul><li>It must be 10 to 14 characters long</li><li>It must contain at least one digit (0-9)</li><li>It can only contain the following characters: a-z, A-Z, 0-9, @, #, $, _</li><li>It must not start with a digit or an underscore ( _ )</li></ul> <br /> (Sensitive* value)
-hdb_concurrent_jobs | Number of concurrent jobs used to load and/or extract archives to HANA Host | Default: 23
-kit_sapcar_file  | Path to sapcar binary | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/SAPCAR_1010-70006178.EXE
-kit_swpm_file | Path to SWPM archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/SWPM10SP31_7-20009701.SAR
-kit_sapexe_file | Path to SAP Kernel OS archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/SAPEXE_801-80002573.SAR
-kit_sapexedb_file | Path to SAP Kernel DB archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/SAPEXEDB_801-80002572.SAR
-kit_igsexe_file | Path to IGS archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/igsexe_13-80003187.sar
-kit_igshelper_file | Path to IGS Helper archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/igshelper_17-10010245.sar
-kit_saphotagent_file | Path to SAP Host Agent archive (SAR) | As downloaded from SAP Support Portal. <br /> Default: /storage/NW75HDB/SAPHOSTAGENT51_51-20009394.SAR
-kit_hdbclient_file | Path to HANA DB client archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/IMDB_CLIENT20_009_28-80002082.SAR
-kit_nwhana_export | Path to Netweaver Installation Export dir | The archives downloaded from SAP Support Portal should be present in this path.<br /> Default: /storage/NW75HDB/ABAPEXP
+HANA_SID | The SAP system ID identifies the SAP HANA system.<br /> _(See Obs.*)_ | <ul><li>Consists of exactly three alphanumeric characters</li><li>Has a letter for the first character</li><li>Does not include any of the reserved IDs listed in SAP Note 1979280</li></ul>|
+HANA_SYSNO | Specifies the instance number of the SAP HANA system| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
+HANA_MAIN_PASSWORD | Common password for all users that are created during the installation. _(See Obs.*)_ | <ul><li>It must be 8 to 14 characters long</li><li>It must consist of at least one digit (0-9), one lowercase letter (a-z), and one uppercase letter (A-Z).</li><li>It can only contain the following characters: a-z, A-Z, 0-9, !, @, #, $, _</li><li>It must not start with a digit or an underscore ( _ )</li></ul> <br /> (Sensitive* value)
+HANA_SYSTEM_USAGE  | System Usage | Default: custom<br> Valid values: production, test, development, custom
+HANA_COMPONENTS | SAP HANA Components | Default: server<br> Valid values: all, client, es, ets, lcapps, server, smartda, streaming, rdsync, xs, studio, afl, sca, sop, eml, rme, rtl, trp
+KIT_SAPHANA_FILE | Path to SAP HANA ZIP file.<br /> _(See Obs.*)_ | As downloaded from SAP Support Portal.<br /> Default: /storage/HANADB/51055299.ZIP
+SAP_SID | The SAP system ID <SAPSID> identifies the entire SAP system.<br /> _(See Obs.*)_ | <ul><li>Consists of exactly three alphanumeric characters</li><li>Has a letter for the first character</li><li>Does not include any of the reserved IDs listed in SAP Note 1979280</li></ul>
+SAP_ASCS_INSTANCE_NUMBER | Technical identifier for internal processes of ASCS| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
+SAP_CI_INSTANCE_NUMBER | Technical identifier for internal processes of CI| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
+SAP_MAIN_PASSWORD | Common password for all users that are created during the installation.<br /> _(See Obs.*)_ | <ul><li>It must be 10 to 14 characters long</li><li>It must contain at least one digit (0-9)</li><li>It can only contain the following characters: a-z, A-Z, 0-9, @, #, $, _</li><li>It must not start with a digit or an underscore ( _ )</li></ul> <br /> (Sensitive* value)
+HDB_CONCURRENT_JOBS | Number of concurrent jobs used to load and/or extract archives to HANA Host | Default: 23
+KIT_SAPCAR_FILE  | Path to sapcar binary | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/SAPCAR_1010-70006178.EXE
+KIT_SWPM_FILE | Path to SWPM archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/SWPM10SP31_7-20009701.SAR
+KIT_SAPEXE_FILE | Path to SAP Kernel OS archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/SAPEXE_801-80002573.SAR
+KIT_SAPEXEDB_FILE | Path to SAP Kernel DB archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/SAPEXEDB_801-80002572.SAR
+KIT_IGSEXE_FILE | Path to IGS archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/igsexe_13-80003187.sar
+KIT_IGSHELPER_FILE | Path to IGS Helper archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/igshelper_17-10010245.sar
+KIT_SAPHOSTAGENT_FILE | Path to SAP Host Agent archive (SAR) | As downloaded from SAP Support Portal. <br /> Default: /storage/NW75HDB/SAPHOSTAGENT51_51-20009394.SAR
+KIT_HDBCLIENT_FILE | Path to HANA DB client archive (SAR) | As downloaded from SAP Support Portal.<br /> Default: /storage/NW75HDB/IMDB_CLIENT20_009_28-80002082.SAR
+KIT_NWHANA_EXPORT | Path to Netweaver Installation Export dir | The archives downloaded from SAP Support Portal should be present in this path.<br /> Default: /storage/NW75HDB/ABAPEXP
 
 **Obs***: <br />
  - **SAP/HANA Passwords.**
@@ -147,8 +162,8 @@ The passwords for the SAP system will be hidden during the schematics apply step
     - Default variable: APP-IMAGE = "ibm-redhat-8-6-amd64-sap-applications-2"
 -  SAP **HANA Installation path kit**
      - Supported SAP HANA versions on Red Hat 8.4, 8.6 and Suse 15.3, 15.4: HANA 2.0 SP 5 Rev 57, kit file: 51055299.ZIP
-     - Example for Red Hat 8 or Suse 15: kit_saphana_file = "/storage/HANADB/51055299.ZIP"
-     - Default variable:  kit_saphana_file = "/storage/HANADB/51055299.ZIP"
+     - Example for Red Hat 8 or Suse 15: KIT_SAPHANA_FILE = "/storage/HANADB/51055299.ZIP"
+     - Default variable:  KIT_SAPHANA_FILE = "/storage/HANADB/51055299.ZIP"
 - The following SAP **"_SID_"** values are _reserved_ and are _not allowed_ to be used: ADD, ALL, AMD, AND, ANY, ARE, ASC, AUX, AVG, BIT, CDC, COM, CON, DBA, END, EPS, FOR, GET, GID, IBM, INT, KEY, LOG, LPT, MAP, MAX, MIN, MON, NIX, NOT, NUL, OFF, OLD, OMS, OUT, PAD, PRN, RAW, REF, ROW, SAP, SET, SGA, SHG, SID, SQL, SUM, SYS, TMP, TOP, UID, USE, USR, VAR.
 
 ### Steps to follow:
@@ -186,15 +201,14 @@ The passwords for the SAP system will be hidden during the schematics apply step
     provisioning, modification, or deletion process.
 
 The output of the Schematics Apply Plan will list the public/private IP addresses
-of the APP VSI and HANA VSI, and the hostname.
+of the APP VSI and HANA VSI, hostname, and Activity Tracker instance name.
 
 ## 2.2 Executing the deployment of **SAP Netweaver on HANA DB Stack** in CLI
 
 The solution is based on Terraform scripts and Ansible playbooks executed in CLI and it is implementing a 'reasonable' set of best practices for SAP VSI host configuration.
 
 **It contains:**
-- Terraform scripts for the deployment of two VSIs, in an EXISTING VPC, with Subnet and Security Group. The VSIs are intended to be used: one for the data base instance and the other for the application instance.
-- The Terraform version used for deployment should be >= 1.3.6. Note: The deployment was tested with Terraform 1.3.6
+- Terraform scripts for the deployment of two VSIs, in an EXISTING VPC, with Subnet and Security Group. The VSIs are intended to be used: one for the data base instance and the other for the application instance. The automation has support for the following versions: Terraform >= 1.3.6 and IBM Cloud provider for Terraform >= 1.41.1.  Note: The deployment was tested with Terraform 1.3.6
 - Ansible scripts to configure SAP Netweaver primary application server and a HANA 2.0 node.
 Please note that Ansible is started by Terraform and must be available on the same host.
 
@@ -213,37 +227,37 @@ Edit your VPC, Subnet, Security group, Hostname, Profile, Image, SSH Keys and st
 # General & Default VPC variables for CLI deployment:
 ######################################################
 
-REGION = ""  
+REGION = "eu-de" 
 # Region for the VSI. Supported regions: https://cloud.ibm.com/docs/containers?topic=containers-regions-and-zones#zones-vpc
 # Edit the variable value with your deployment Region.
 # Example: REGION = "eu-de"
 
-ZONE = ""    
+ZONE = "eu-de-1"
 # Availability zone for VSI. Supported zones: https://cloud.ibm.com/docs/containers?topic=containers-regions-and-zones#zones-vpc
 # Edit the variable value with your deployment Zone.
 # Example: ZONE = "eu-de-1"
 
-VPC = ""
+VPC = "ic4sap"
 # EXISTING VPC, previously created by the user in the same region as the VSI. The list of available VPCs: https://cloud.ibm.com/vpc-ext/network/vpcs
 # Example: VPC = "ic4sap"
 
-SECURITY_GROUP = ""
+SECURITY_GROUP = "ic4sap-securitygroup"
 # EXISTING Security group, previously created by the user in the same VPC. The list of available Security Groups: https://cloud.ibm.com/vpc-ext/network/securityGroups
 # Example: SECURITY_GROUP = "ic4sap-securitygroup"
 
-RESOURCE_GROUP = ""
+RESOURCE_GROUP = "wes-automation"
 # EXISTING Resource group, previously created by the user. The list of available Resource Groups: https://cloud.ibm.com/account/resource-groups
 # Example: RESOURCE_GROUP = "wes-automation"
 
-SUBNET = ""
+SUBNET = "ic4sap-subnet"
 # EXISTING Subnet in the same region and zone as the VSI, previously created by the user. The list of available Subnets: https://cloud.ibm.com/vpc-ext/network/subnets
 # Example: SUBNET = "ic4sap-subnet"
 
-SSH_KEYS = [""]
+SSH_KEYS = ["r010-8f72b994-c17f-4500-af8f-d05680374t3c", "r011-8f72v884-c17f-4500-af8f-d05900374t3c"]
 # List of SSH Keys UUIDs that are allowed to SSH as root to the VSI. The SSH Keys should be created for the same region as the VSI. The list of available SSH Keys UUIDs: https://cloud.ibm.com/vpc-ext/compute/sshKeys
 # Example: SSH_KEYS = ["r010-8f72b994-c17f-4500-af8f-d05680374t3c", "r011-8f72v884-c17f-4500-af8f-d05900374t3c"]
  
-ID_RSA_FILE_PATH = ""
+ID_RSA_FILE_PATH = "ansible/id_rsa"
 # Input your id_rsa private key file path in OpenSSH format with 0600 permissions.
 # This private key it is used only during the terraform provisioning and it is recommended to be changed after the SAP deployment.
 # Can be used relative or absolut paths. Examples: "~/.ssh/id_rsa_nw_abap_hana" or "/root/.ssh/id_rsa".
@@ -252,14 +266,14 @@ ID_RSA_FILE_PATH = ""
 # SAP Database VSI variables:
 ##########################################################
 
-DB-HOSTNAME = "sapnwhdb" 
+DB_HOSTNAME = "sapnwhdb" 
 # The hostname for the DB VSI. The hostname should be up to 13 characters, as required by SAP
-# Example: HOSTNAME = "sapnwhdb"
+# Example: DB_HOSTNAME = "sapnwhdb"
 
-DB-PROFILE = "mx2-16x128"
+DB_PROFILE = "mx2-16x128"
 # The DB VSI profile. Supported profiles for DB VSI: mx2-16x128. The list of available profiles: https://cloud.ibm.com/docs/vpc?topic=vpc-profiles&interface=ui
 
-DB-IMAGE = "ibm-redhat-8-6-amd64-sap-hana-2"
+DB_IMAGE = "ibm-redhat-8-6-amd64-sap-hana-2"
 # OS image for HANA DB VSI. Supported OS images for HANA DB VSIs: ibm-redhat-8-4-amd64-sap-hana-2, ibm-redhat-8-6-amd64-sap-hana-2,ibm-sles-15-3-amd64-sap-hana-2, ibm-sles-15-4-amd64-sap-hana-1.
 # The list of available VPC Operating Systems supported by SAP: SAP note '2927211 - SAP Applications on IBM Virtual Private Cloud (VPC) Infrastructure environment' https://launchpad.support.sap.com/#/notes/2927211; The list of all available OS images: https://cloud.ibm.com/docs/vpc?topic=vpc-about-images
 # Example: IMAGE = "ibm-redhat-8-6-amd64-sap-hana-2"
@@ -268,14 +282,14 @@ DB-IMAGE = "ibm-redhat-8-6-amd64-sap-hana-2"
 # SAP APPs VSI variables
 ##########################################################
 
-APP-HOSTNAME = "sapnwci" 
+APP_HOSTNAME = "sapnwci" 
 # The hostname for the APP VSI. The hostname should be up to 13 characters, as required by SAP
-# Example: HOSTNAME = "sapnwci"
+# Example: APP_HOSTNAME = "sapnwci"
 
-APP-PROFILE = "bx2-4x16"
+APP_PROFILE = "bx2-4x16"
 # The APP VSI profile. Supported profiles for DB VSI: bx2-4x16. The list of available profiles: https://cloud.ibm.com/docs/vpc?topic=vpc-profiles&interface=ui
 
-APP-IMAGE = "ibm-redhat-8-6-amd64-sap-applications-2"
+APP_IMAGE = "ibm-redhat-8-6-amd64-sap-applications-2"
 # OS image for SAP APP VSI. Supported OS images for SAP APP VSIs: ibm-redhat-8-4-amd64-sap-applications-2, ibm-redhat-8-6-amd64-sap-applications-2, ibm-sles-15-3-amd64-sap-applications-2, ibm-sles-15-4-amd64-sap-applications-3.
 # The list of available VPC Operating Systems supported by SAP: SAP note '2927211 - SAP Applications on IBM Virtual Private Cloud (VPC) Infrastructure environment' https://launchpad.support.sap.com/#/notes/2927211; The list of all available OS images: https://cloud.ibm.com/docs/vpc?topic=vpc-about-images
 # Example: IMAGE = "ibm-redhat-8-6-amd64-sap-applications-2"
@@ -284,7 +298,7 @@ APP-IMAGE = "ibm-redhat-8-6-amd64-sap-applications-2"
 
 Parameter | Description
 ----------|------------
-ibmcloud_api_key | IBM Cloud API key (Sensitive* value).
+IBMCLOUD_API_KEY | IBM Cloud API key (Sensitive* value).
 REGION | The cloud region where to deploy the solution. <br /> The regions and zones for VPC are listed [here](https://cloud.ibm.com/docs/containers?topic=containers-regions-and-zones#zones-vpc). <br />  Sample value: eu-de.
 ZONE | The cloud zone where to deploy the solution. <br /> Sample value: eu-de-2.
 VPC | The name of an EXISTING VPC. The list of VPCs is available [here](https://cloud.ibm.com/vpc-ext/network/vpcs)
@@ -292,13 +306,51 @@ SECURITY_GROUP | The name of an EXISTING Security group. The list of Security Gr
 RESOURCE_GROUP | The name of an EXISTING Resource Group for VSIs and Volumes resources. <br /> Sample value: "Default". The list of Resource Groups is available [here](https://cloud.ibm.com/account/resource-groups).
 SUBNET | The name of an EXISTING Subnet. The list of Subnets is available [here](https://cloud.ibm.com/vpc-ext/network/subnets). 
 SSH_KEYS | List of SSH Keys UUIDs that are allowed to SSH as root to the VSI. Can contain one or more IDs. The list of SSH Keys is available [here](https://cloud.ibm.com/vpc-ext/compute/sshKeys). <br /> Sample input (use your own SSH UUIDs from IBM Cloud):<br /> [ "r010-57bfc315-f9e5-46bf-bf61-d87a24a9ce7a" , "r010-3fcd9fe7-d4a7-41ce-8bb3-d96e936b2c7e" ]
-ID_RSA_FILE_PATH | The file path for private_ssh_key will be automatically generated by default. If it is changed, it must contain the relative path from git repo folders.<br /> Sample value: "ansible/id_rsa_nw_abap_hana".
-DB-HOSTNAME | The Hostname for the HANA VSI. The hostname should be up to 13 characters as required by SAP.  For more information on rules regarding hostnames for SAP systems, check [SAP Note 611361: Hostnames of SAP ABAP Platform servers](https://launchpad.support.sap.com/#/notes/%20611361)
-DB-PROFILE |  The instance profile used for the HANA VSI. A list of profiles is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) <br>  For more information about supported DB/OS and IBM Gen 2 Virtual Server Instances (VSI), check [SAP Note 2927211: SAP Applications on IBM Virtual Private Cloud](https://launchpad.support.sap.com/#/notes/2927211) <br /> Default value: "mx2-16x128"
-DB-IMAGE | The OS image used for HANA VSI (See Obs*). A list of images is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-about-images).<br /> Default value: ibm-redhat-8-6-amd64-sap-hana-2
+ID_RSA_FILE_PATH | The file path for PRIVATE_SSH_KEY will be automatically generated by default. If it is changed, it must contain the relative path from git repo folders.<br /> Sample value: "ansible/id_rsa_nw_abap_hana".
+DB_HOSTNAME | The Hostname for the HANA VSI. The hostname should be up to 13 characters as required by SAP.  For more information on rules regarding hostnames for SAP systems, check [SAP Note 611361: Hostnames of SAP ABAP Platform servers](https://launchpad.support.sap.com/#/notes/%20611361)
+DB_PROFILE |  The instance profile used for the HANA VSI. A list of profiles is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) <br>  For more information about supported DB/OS and IBM Gen 2 Virtual Server Instances (VSI), check [SAP Note 2927211: SAP Applications on IBM Virtual Private Cloud](https://launchpad.support.sap.com/#/notes/2927211) <br /> Default value: "mx2-16x128"
+DB_IMAGE | The OS image used for HANA VSI (See Obs*). A list of images is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-about-images).<br /> Default value: ibm-redhat-8-6-amd64-sap-hana-2
 APP-HOSTNAME | The Hostname for the SAP Application VSI. The hostname should be up to 13 characters as required by SAP.  For more information on rules regarding hostnames for SAP systems, check [SAP Note 611361: Hostnames of SAP ABAP Platform servers](https://launchpad.support.sap.com/#/notes/%20611361)
 APP-PROFILE |  The instance profile used for SAP Application VSI. A list of profiles is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) <br>  For more information about supported DB/OS and IBM Gen 2 Virtual Server Instances (VSI), check [SAP Note 2927211: SAP Applications on IBM Virtual Private Cloud](https://launchpad.support.sap.com/#/notes/2927211) <br /> Default value: "bx2-4x16"
 APP-IMAGE | The OS image used for SAP Application VSI (See Obs*). A list of images is available [here](https://cloud.ibm.com/docs/vpc?topic=vpc-about-images).<br /> Default value: ibm-redhat-8-6-amd64-sap-applications-2
+
+
+**Activity Tracker input parameters**
+
+Edit your IBM Cloud Activity Tracker input variables below:
+
+```shell
+##########################################################
+# Activity Tracker variables:
+##########################################################
+
+ATR_PROVISION = "true"
+# Enables (ATR_PROVISION=true) or not (ATR_PROVISION=false) the provisioning of a new Activity Tracker instance. Default value: true
+# Example to create Activity Tracker instance: ATR_PROVISION=true
+# Example to use existing Activity Tracker instance : ATR_PROVISION=false
+
+ATR_NAME = "Activity-Tracker-SAP-eu-de"
+# The name of the Activity Tracker instance to be created or the name of an existent Activity Tracker instance, in the same region chosen for SAP system deployment.
+# Example: ATR_NAME="Activity-Tracker-SAP-eu-de"
+
+ATR_TAGS = [""]
+# Optional parameter. A list of user tags associated with the activity tracker instance.
+# Example: ATR_TAGS = ["activity-tracker-cos"]
+
+ATR_PLAN = "lite"
+# Mandatory only if ATR_PROVISION is set to true. The list of service plans - https://cloud.ibm.com/docs/activity-tracker?topic=activity-tracker-service_plan#service_plan
+# Default value: "lite"
+# Example: ATR_PLAN = "7-day"
+
+```
+
+Parameter | Description
+----------|------------
+ATR_NAME | The name of the Activity Tracker instance to be created or the name of an existent Activity Tracker instance, in the same region chosen for SAP system deployment.
+ATR_PROVISION | Enables (ATR_PROVISION=true) or not (ATR_PROVISION=false) the provisioning of a new Activity Tracker instance.. <br /> Default value: true
+ATR_PLAN | Mandatory only if ATR_PROVISION is set to true. The list of service plan is available [here](https://cloud.ibm.com/docs/activity-tracker?topic=activity-tracker-service_plan#service_plan). <br /> Default value: "lite"
+ATR_TAGS | Optional parameter. A list of user tags associated with the activity tracker instance.
+
 
 Edit the SAP system configuration variables that will be passed to the ansible automated deployment:
 
@@ -308,80 +360,80 @@ Edit the SAP system configuration variables that will be passed to the ansible a
 # HANA DB configuration
 ##########################################################
 
-hana_sid = "HDB"
-hana_sysno = "00"
-hana_system_usage = "custom"
-hana_components = "server"
+HANA_SID = "HDB"
+HANA_SYSNO = "00"
+HANA_SYSTEM_USAGE = "custom"
+HANA_COMPONENTS = "server"
 
 
 ##########################################################
 # SAP HANA Installation kit path
 ##########################################################
-kit_saphana_file = "/storage/HANADB/51055299.ZIP"
+KIT_SAPHANA_FILE = "/storage/HANADB/51055299.ZIP"
 
 
 ##########################################################
 # SAP system configuration
 ##########################################################
 
-sap_sid = "NWD"
+SAP_SID = "NWD"
 # SAP System ID
 
-sap_ascs_instance_number = "01"
+SAP_ASCS_INSTANCE_NUMBER = "01"
 # The central ABAP service instance number. Should follow the SAP rules for instance number naming.
-# Example: sap_ascs_instance_number = "01"
+# Example: SAP_ASCS_INSTANCE_NUMBER = "01"
 
-sap_ci_instance_number = "00"
+SAP_CI_INSTANCE_NUMBER = "00"
 # The SAP central instance number. Should follow the SAP rules for instance number naming.
-# Example: sap_ci_instance_number = "06"
+# Example: SAP_ASCS_INSTANCE_NUMBER = "06"
 
 # Number of concurrent jobs used to load and/or extract archives to HANA Host
-hdb_concurrent_jobs = "12"
+HDB_CONCURRENT_JOBS = "12"
 
 ##########################################################
 # SAP NW APP Installation kit path
 ##########################################################
 
-kit_sapcar_file = "/storage/NW75HDB/SAPCAR_1010-70006178.EXE"
-kit_swpm_file = "/storage/NW75HDB/SWPM10SP31_7-20009701.SAR"
-kit_sapexe_file = "/storage/NW75HDB/SAPEXE_801-80002573.SAR"
-kit_sapexedb_file = "/storage/NW75HDB/SAPEXEDB_801-80002572.SAR"
-kit_igsexe_file = "/storage/NW75HDB/igsexe_13-80003187.sar"
-kit_igshelper_file = "/storage/NW75HDB/igshelper_17-10010245.sar"
-kit_saphotagent_file = "/storage/NW75HDB/SAPHOSTAGENT51_51-20009394.SAR"
-kit_hdbclient_file = "/storage/NW75HDB/IMDB_CLIENT20_009_28-80002082.SAR"
-kit_nwhana_export = "/storage/NW75HDB/ABAPEXP"
+KIT_SAPCAR_FILE = "/storage/NW75HDB/SAPCAR_1010-70006178.EXE"
+KIT_SWPM_FILE = "/storage/NW75HDB/SWPM10SP31_7-20009701.SAR"
+KIT_SAPEXE_FILE = "/storage/NW75HDB/SAPEXE_801-80002573.SAR"
+KIT_SAPEXEDB_FILE = "/storage/NW75HDB/SAPEXEDB_801-80002572.SAR"
+KIT_IGSEXE_FILE = "/storage/NW75HDB/igsexe_13-80003187.sar"
+KIT_IGSHELPER_FILE = "/storage/NW75HDB/igshelper_17-10010245.sar"
+KIT_SAPHOSTAGENT_FILE = "/storage/NW75HDB/SAPHOSTAGENT51_51-20009394.SAR"
+KIT_HDBCLIENT_FILE = "/storage/NW75HDB/IMDB_CLIENT20_009_28-80002082.SAR"
+KIT_NWHANA_EXPORT = "/storage/NW75HDB/ABAPEXP"
 ```
 **SAP input parameters:**
 
 Parameter | Description | Requirements
 ----------|-------------|-------------
-hana_sid | The SAP system ID identifies the SAP HANA system | <ul><li>Consists of exactly three alphanumeric characters</li><li>Has a letter for the first character</li><li>Does not include any of the reserved IDs listed in SAP Note 1979280</li></ul>|
-hana_sysno | Specifies the instance number of the SAP HANA system| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
-hana_system_usage  | System Usage | Default: custom<br> Valid values: production, test, development, custom
-hana_components | SAP HANA Components | Default: server<br> Valid values: all, client, es, ets, lcapps, server, smartda, streaming, rdsync, xs, studio, afl, sca, sop, eml, rme, rtl, trp
-kit_saphana_file | Path to SAP HANA ZIP file | As downloaded from SAP Support Portal
-sap_sid | The SAP system ID <SAPSID> identifies the entire SAP system | <ul><li>Consists of exactly three alphanumeric characters</li><li>Has a letter for the first character</li><li>Does not include any of the reserved IDs listed in SAP Note 1979280</li></ul>
-sap_ascs_instance_number | Technical identifier for internal processes of ASCS| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
-sap_ci_instance_number | Technical identifier for internal processes of CI| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
-hdb_concurrent_jobs | Number of concurrent jobs used to load and/or extract archives to HANA Host | Default: 12
-kit_sapcar_file  | Path to sapcar binary | As downloaded from SAP Support Portal
-kit_swpm_file | Path to SWPM archive (SAR) | As downloaded from SAP Support Portal
-kit_sapexe_file | Path to SAP Kernel OS archive (SAR) | As downloaded from SAP Support Portal
-kit_sapexedb_file | Path to SAP Kernel DB archive (SAR) | As downloaded from SAP Support Portal
-kit_igsexe_file | Path to IGS archive (SAR) | As downloaded from SAP Support Portal
-kit_igshelper_file | Path to IGS Helper archive (SAR) | As downloaded from SAP Support Portal
-kit_saphostagent_file | Path to SAP Host Agent archive (SAR) | As downloaded from SAP Support Portal
-kit_hdbclient_file | Path to HANA DB client archive (SAR) | As downloaded from SAP Support Portal
-kit_nwhana_export | Path to Netweaver Installation Export dir | The archives downloaded from SAP Support Portal should be present in this path
+HANA_SID | The SAP system ID identifies the SAP HANA system | <ul><li>Consists of exactly three alphanumeric characters</li><li>Has a letter for the first character</li><li>Does not include any of the reserved IDs listed in SAP Note 1979280</li></ul>|
+HANA_SYSNO | Specifies the instance number of the SAP HANA system| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
+HANA_SYSTEM_USAGE  | System Usage | Default: custom<br> Valid values: production, test, development, custom
+HANA_COMPONENTS | SAP HANA Components | Default: server<br> Valid values: all, client, es, ets, lcapps, server, smartda, streaming, rdsync, xs, studio, afl, sca, sop, eml, rme, rtl, trp
+KIT_SAPHANA_FILE | Path to SAP HANA ZIP file | As downloaded from SAP Support Portal
+SAP_SID | The SAP system ID <SAPSID> identifies the entire SAP system | <ul><li>Consists of exactly three alphanumeric characters</li><li>Has a letter for the first character</li><li>Does not include any of the reserved IDs listed in SAP Note 1979280</li></ul>
+SAP_ASCS_INSTANCE_NUMBER | Technical identifier for internal processes of ASCS| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
+SAP_CI_INSTANCE_NUMBER | Technical identifier for internal processes of CI| <ul><li>Two-digit number from 00 to 97</li><li>Must be unique on a host</li></ul>
+HDB_CONCURRENT_JOBS | Number of concurrent jobs used to load and/or extract archives to HANA Host | Default: 12
+KIT_SAPCAR_FILE  | Path to sapcar binary | As downloaded from SAP Support Portal
+KIT_SWPM_FILE | Path to SWPM archive (SAR) | As downloaded from SAP Support Portal
+KIT_SAPEXE_FILE | Path to SAP Kernel OS archive (SAR) | As downloaded from SAP Support Portal
+KIT_SAPEXEDB_FILE | Path to SAP Kernel DB archive (SAR) | As downloaded from SAP Support Portal
+KIT_IGSEXE_FILE | Path to IGS archive (SAR) | As downloaded from SAP Support Portal
+KIT_IGSHELPER_FILE | Path to IGS Helper archive (SAR) | As downloaded from SAP Support Portal
+KIT_SAPHOSTAGENT_FILE | Path to SAP Host Agent archive (SAR) | As downloaded from SAP Support Portal
+KIT_HDBCLIENT_FILE | Path to HANA DB client archive (SAR) | As downloaded from SAP Support Portal
+KIT_NWHANA_EXPORT | Path to Netweaver Installation Export dir | The archives downloaded from SAP Support Portal should be present in this path
 
 **SAP Main Password**
 The password for the SAP system will be asked interactively during terraform plan step and will not be available after the deployment.
 
 Parameter | Description | Requirements
 ----------|-------------|-------------
-sap_main_password | Common password for all users that are created during the installation | <ul><li>It must be 8 to 14 characters long</li><li>It must contain at least one digit (0-9)</li><li>It must not contain \ (backslash) and " (double quote)</li></ul>
-hana_main_password | HANA system main password | <ul><li>It must be 8 to 14 characters long</li><li>It must contain at least one digit (0-9)</li><li>It must not contain \ (backslash) and " (double quote)</li><li>Main Password must contain at least one upper-case character</li></ul>
+SAP_MAIN_PASSWORD | Common password for all users that are created during the installation | <ul><li>It must be 8 to 14 characters long</li><li>It must contain at least one digit (0-9)</li><li>It must not contain \ (backslash) and " (double quote)</li></ul>
+HANA_MAIN_PASSWORD | HANA system main password | <ul><li>It must be 8 to 14 characters long</li><li>It must contain at least one digit (0-9)</li><li>It must not contain \ (backslash) and " (double quote)</li><li>Main Password must contain at least one upper-case character</li></ul>
  
  
 
@@ -397,7 +449,7 @@ For planning phase:
 
 ```shell
 terraform plan --out plan1
-# you will be asked for the following sensitive variables: 'ibmcloud_api_key', 'sap_main_password' and 'hana_main_password'.
+# you will be asked for the following sensitive variables: 'IBMCLOUD_API_KEY', 'SAP_MAIN_PASSWORD' and 'HANA_MAIN_PASSWORD'.
 ```
 
 For apply phase:
@@ -411,8 +463,11 @@ For destroy:
 ```shell
 terraform destroy
 # you will be asked for the following sensitive variables as a destroy confirmation phase:
-'ibmcloud_api_key', 'sap_main_password' and 'hana_main_password'.
+'IBMCLOUD_API_KEY', 'SAP_MAIN_PASSWORD' and 'HANA_MAIN_PASSWORD'.
+
 ```
+
+Note: The terraform destroy command will remove also the Activity Tracker instance, if it was provisioned at the same time with the SAP solution (when the parameter ATR_PROVISION was set to true during the deployment of the SAP solution).
 
 ## 3.1 Related links:
 
@@ -420,4 +475,5 @@ terraform destroy
 - [Securely Access Remote Instances with a Bastion Host](https://www.ibm.com/cloud/blog/tutorial-securely-access-remote-instances-with-a-bastion-host)
 - [VPNs for VPC overview: Site-to-site gateways and Client-to-site servers.](https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-overview)
 - [IBM Cloud Schematics](https://www.ibm.com/cloud/schematics)
+- [IBM Cloud Activity Tracker](https://cloud.ibm.com/docs/activity-tracker?topic=activity-tracker-getting-started#gs_ov)
 
