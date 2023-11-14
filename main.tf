@@ -34,21 +34,9 @@ module "precheck-ssh-exec" {
   
 }
 
-module "activity-tracker" {
-  source  = "./modules/activity-tracker"
-  depends_on = [ module.precheck-ssh-exec ]
-  RESOURCE_GROUP = var.RESOURCE_GROUP
-  ATR_PROVISION = var.ATR_PROVISION
-  REGION = var.REGION
-  ATR_NAME = var.ATR_NAME
-  ATR_PLAN = var.ATR_PLAN
-  ATR_TAGS = var.ATR_TAGS
-}
-
-
 module "vpc-subnet" {
   source  = "./modules/vpc/subnet"
-  depends_on = [ module.activity-tracker ]
+  depends_on = [ module.precheck-ssh-exec ]
   ZONE  = var.ZONE
   VPC = var.VPC
   SECURITY_GROUP = var.SECURITY_GROUP
@@ -67,9 +55,6 @@ module "db-vsi" {
   PROFILE		= var.DB_PROFILE
   IMAGE			= var.DB_IMAGE
   SSH_KEYS		= var.SSH_KEYS
-  VOLUME_SIZES	= [ "500" , "500" , "500" ]
-  VOL_PROFILE	= "10iops-tier"
-
 }
 
 module "app-vsi" {
@@ -91,7 +76,7 @@ module "app-vsi" {
 
 module "app-ansible-exec-schematics" {
   source  = "./modules/ansible-exec"
-  depends_on	= [ module.db-vsi , module.app-vsi , local_file.ansible_inventory , local_file.db_ansible_saphana-vars , local_file.app_ansible_nwapp-vars  ]
+  depends_on	= [module.db-vsi, module.app-vsi, local_file.ansible_inventory, local_file.db_ansible_saphana-vars, local_file.tf_ansible_hana_storage_generated_file, local_file.app_ansible_nwapp-vars]
   count = (var.PRIVATE_SSH_KEY == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 0 : 1)
   IP = data.ibm_is_instance.app-vsi-1.primary_network_interface[0].primary_ip[0].address
   PLAYBOOK = "sap-abap-hana.yml"
@@ -104,7 +89,7 @@ module "app-ansible-exec-schematics" {
 
 module "ansible-exec-cli" {
   source  = "./modules/ansible-exec/cli"
-  depends_on	= [ module.db-vsi , module.app-vsi , local_file.ansible_inventory , local_file.db_ansible_saphana-vars , local_file.app_ansible_nwapp-vars, module.pre-init-cli]
+  depends_on	= [ module.db-vsi, module.app-vsi, local_file.ansible_inventory, local_file.db_ansible_saphana-vars, local_file.tf_ansible_hana_storage_generated_file, local_file.app_ansible_nwapp-vars, module.pre-init-cli]
   count = (var.PRIVATE_SSH_KEY == "n.a" && var.BASTION_FLOATING_IP == "localhost" ? 1 : 0)
   IP = data.ibm_is_instance.app-vsi-1.primary_network_interface[0].primary_ip[0].address
   ID_RSA_FILE_PATH = var.ID_RSA_FILE_PATH

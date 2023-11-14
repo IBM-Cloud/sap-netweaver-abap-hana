@@ -39,7 +39,6 @@ nwapp_required_configurations:
   - "hostname"
   - "kernel_RedHat8"
   - "umask_RHEL"
-  - "reboot"
   - "filesystems"
   - "SELinux"
   - "firewalld"
@@ -48,4 +47,5 @@ nwapp_required_configurations:
   - "kdump"
   - "limits"
   - "tmpfiles"
+  - "reboot"
 ... 

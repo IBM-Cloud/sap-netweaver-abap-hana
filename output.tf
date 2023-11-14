@@ -18,3 +18,7 @@ output "ATR_INSTANCE_NAME" {
   description = "Activity Tracker instance name."
   value       = var.ATR_NAME
 }
+
+output "DB_STORAGE_LAYOUT" {
+  value   = module.db-vsi.STORAGE-LAYOUT
+}

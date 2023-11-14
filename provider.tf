@@ -1,5 +1,5 @@
 variable "IBMCLOUD_API_KEY" {
-	description = "IBM Cloud API key (Sensitive* value)."
+	description = "IBM Cloud API key (Sensitive value)."
 	sensitive = true
 		validation {
 			condition = length(var.IBMCLOUD_API_KEY) > 43 #&& substr(var.IBMCLOUD_API_KEY, 14, 15) == "-"

@@ -41,8 +41,8 @@ saphana_required_configurations:
   - "hostname"
   - "umask_RHEL"
   - "kernel_RedHat8"
-  - "reboot"
   - "filesystems"
+  - "tmpfs"
   - "tuned"
   - "SELinux"
   - "firewalld"
@@ -51,4 +51,5 @@ saphana_required_configurations:
   - "kdump"
   - "limits"
   - "tmpfiles"
+  - "reboot"
 ... 

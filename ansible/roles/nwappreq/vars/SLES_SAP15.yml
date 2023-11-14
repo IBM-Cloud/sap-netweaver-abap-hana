@@ -2,6 +2,7 @@
 nwapp_required_packages:
   - lvm2
   - uuidd
+  - nfs-utils
 
 nwapp_required_configurations:
   - "update_SLES_SAP"
