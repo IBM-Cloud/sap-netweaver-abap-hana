@@ -5,6 +5,7 @@
     - name: Import playbook variables
       include_vars: "nwapp-vars.yml"
   roles:
+    - nwappfs
     - nwappreq
     - nwappinst
 ...

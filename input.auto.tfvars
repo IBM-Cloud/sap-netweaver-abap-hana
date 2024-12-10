@@ -33,19 +33,10 @@ SSH_KEYS = [""]
 # Example: SSH_KEYS = ["r010-8f72b994-c17f-4500-af8f-d05680374t3c", "r011-8f72v884-c17f-4500-af8f-d05900374t3c"]
 
 ID_RSA_FILE_PATH = "ansible/id_rsa"
-# Input your existing id_rsa private key file path in OpenSSH format with 0600 permissions.
-# This private key it is used only during the terraform provisioning and it is recommended to be changed after the SAP deployment.
+# The id_rsa private key file path in OpenSSH format with 0600 permissions.
+# This private key is used only during the terraform provisioning and it is recommended to be changed after the SAP deployment.
 # It must contain the relative or absoute path from your Bastion.
-# Examples: "ansible/id_rsa_abap_ase-syb_std" , "~/.ssh/id_rsa_abap_ase-syb_std" , "/root/.ssh/id_rsa".
-
-
-##########################################################
-# Activity Tracker variables:
-##########################################################
-
-ATR_NAME = ""
-# The name of the EXISTING Activity Tracker instance, in the same region chosen for SAP system deployment.
-# Example: ATR_NAME="Activity-Tracker-SAP-eu-de"
+# Examples: "ansible/id_rsa_nwhana" , "~/.ssh/id_rsa_nwhana" , "/root/.ssh/id_rsa".
 
 ##########################################################
 # DB VSI variables:
@@ -61,10 +52,10 @@ DB_PROFILE = "mx2-16x128"
 # For more information about supported DB/OS and IBM Gen 2 Virtual Server Instances (VSI), check [SAP Note 2927211: SAP Applications on IBM Virtual Private Cloud](https://launchpad.support.sap.com/#/notes/2927211) 
 # Default value: "mx2-16x128"
 
-DB_IMAGE = "ibm-redhat-8-6-amd64-sap-hana-4"
-# OS image for DB VSI. Supported OS images for DB VSIs: ibm-sles-15-4-amd64-sap-hana-5, ibm-sles-15-3-amd64-sap-hana-8, ibm-redhat-8-6-amd64-sap-hana-4, ibm-redhat-8-4-amd64-sap-hana-7.
+DB_IMAGE = "ibm-redhat-8-6-amd64-sap-hana-6"
+# OS image for DB VSI. Validated OS images for DB servers: ibm-redhat-8-6-amd64-sap-hana-6, ibm-redhat-8-4-amd64-sap-hana-10, ibm-sles-15-4-amd64-sap-hana-8, ibm-sles-15-3-amd64-sap-hana-11.
 # The list of available VPC Operating Systems supported by SAP: SAP note '2927211 - SAP Applications on IBM Virtual Private Cloud (VPC) Infrastructure environment' https://launchpad.support.sap.com/#/notes/2927211; The list of all available OS images: https://cloud.ibm.com/docs/vpc?topic=vpc-about-images
-# Example: DB_IMAGE = "ibm-redhat-8-6-amd64-sap-hana-4"
+# Example: DB_IMAGE = "ibm-redhat-8-6-amd64-sap-hana-6"
 
 ##########################################################
 # SAP APP VSI variables:
@@ -77,23 +68,26 @@ APP_HOSTNAME = ""
 APP_PROFILE = "bx2-4x16"
 # The APP VSI profile. Supported profiles: bx2-4x16. The list of available profiles: https://cloud.ibm.com/docs/vpc?topic=vpc-profiles&interface=ui
 
-APP_IMAGE = "ibm-redhat-8-6-amd64-sap-applications-4"
-# OS image for SAP APP VSI. Supported OS images for APP VSIs: ibm-sles-15-4-amd64-sap-applications-6, ibm-sles-15-3-amd64-sap-applications-9, ibm-redhat-8-6-amd64-sap-applications-4, ibm-redhat-8-4-amd64-sap-applications-7.
+APP_IMAGE = "ibm-redhat-8-6-amd64-sap-applications-6"
+# OS image for SAP APP VSI. Validated OS images for APP VSIs: ibm-redhat-8-6-amd64-sap-applications-6, ibm-redhat-8-4-amd64-sap-applications-10, ibm-sles-15-4-amd64-sap-applications-9, ibm-sles-15-3-amd64-sap-applications-12.
 # The list of available VPC Operating Systems supported by SAP: SAP note '2927211 - SAP Applications on IBM Virtual Private Cloud (VPC) Infrastructure environment' https://launchpad.support.sap.com/#/notes/2927211; The list of all available OS images: https://cloud.ibm.com/docs/vpc?topic=vpc-about-images
-# Example: APP_IMAGE = "ibm-redhat-8-6-amd64-sap-applications-4" 
-
+# Example: APP_IMAGE = "ibm-redhat-8-6-amd64-sap-applications-6" 
 
 ##########################################################
 # SAP HANA configuration
 ##########################################################
 
-HANA_SID = "NDB"
+HANA_SID = "HDB"
 # SAP HANA system ID. Should follow the SAP rules for SID naming.
 # Example: HANA_SID = "HDB"
 
 HANA_SYSNO = "00"
 # SAP HANA instance number. Should follow the SAP rules for instance number naming.
 # Example: HANA_SYSNO = "01"
+
+HANA_TENANT = "NWD"
+# SAP HANA tenant name
+# Example:HANA_TENANT = "HDB_TEN1"
 
 HANA_SYSTEM_USAGE = "custom"
 # System usage. Default: custom. Suported values: production, test, development, custom
@@ -103,11 +97,10 @@ HANA_COMPONENTS = "server"
 # SAP HANA Components. Default: server. Supported values: all, client, es, ets, lcapps, server, smartda, streaming, rdsync, xs, studio, afl, sca, sop, eml, rme, rtl, trp
 # Example: HANA_COMPONENTS = "server"
 
-KIT_SAPHANA_FILE = "/storage/HANADB/51055299.ZIP"
+KIT_SAPHANA_FILE = "/storage/HANADB/SP07/Rev73/51057281.ZIP"
 # SAP HANA Installation kit path
-# Supported SAP HANA versions on Red Hat 8 and Suse 15: HANA 2.0 SP 5 Rev 57, kit file: 51055299.ZIP
+# Validate SAP HANA versions on Red Hat 8 and Suse 15: HANA 2.0 SP 7 Rev 73, kit file: 51055299.ZIP
 # Example for Red Hat 8 or Suse 15: KIT_SAPHANA_FILE = "/storage/HANADB/51055299.ZIP"
-
 
 ##########################################################
 # SAP system configuration
@@ -132,13 +125,12 @@ HDB_CONCURRENT_JOBS = "12"
 ##########################################################
 
 
-KIT_SAPCAR_FILE = "/storage/NW75HDB/SAPCAR_1010-70006178.EXE"
-KIT_SWPM_FILE = "/storage/NW75HDB/SWPM10SP31_7-20009701.SAR"
-KIT_SAPEXE_FILE = "/storage/NW75HDB/SAPEXE_801-80002573.SAR"
-KIT_SAPEXEDB_FILE = "/storage/NW75HDB/SAPEXEDB_801-80002572.SAR"
-KIT_IGSEXE_FILE = "/storage/NW75HDB/igsexe_13-80003187.sar"
+KIT_SAPCAR_FILE = "/storage/NW75HDB/SAPCAR_1300-70007716.EXE"
+KIT_SWPM_FILE = "/storage/NW75HDB/SWPM10SP42_0-20009701.SAR"
+KIT_SAPEXE_FILE = "/storage/NW75HDB/KERNEL/754/SAPEXE_400-80007612.SAR"
+KIT_SAPEXEDB_FILE = "/storage/NW75HDB/KERNEL/754/SAPEXEDB_400-80007611.SAR"
+KIT_IGSEXE_FILE = "/storage/NW75HDB/KERNEL/754/igsexe_4-80007786.sar"
 KIT_IGSHELPER_FILE = "/storage/NW75HDB/igshelper_17-10010245.sar"
-KIT_SAPHOSTAGENT_FILE = "/storage/NW75HDB/SAPHOSTAGENT51_51-20009394.SAR"
-KIT_HDBCLIENT_FILE = "/storage/NW75HDB/IMDB_CLIENT20_009_28-80002082.SAR"
-KIT_NWHANA_EXPORT = "/storage/NW75HDB/ABAPEXP"
-
+KIT_SAPHOSTAGENT_FILE = "/storage/NW75HDB/SAPHOSTAGENT65_65-80004822.SAR"
+KIT_HDBCLIENT_FILE = "/storage/NW75HDB/IMDB_CLIENT20_022_27-80002082.SAR"
+KIT_NWHANA_EXPORT_FILE = "/storage/NW75HDB/ABAPEXP/51050829_3.ZIP"

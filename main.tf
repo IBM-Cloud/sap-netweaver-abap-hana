@@ -18,8 +18,8 @@ module "pre-init-cli" {
   KIT_IGSHELPER_FILE = var.KIT_IGSHELPER_FILE
   KIT_SAPHOSTAGENT_FILE = var.KIT_SAPHOSTAGENT_FILE
   KIT_HDBCLIENT_FILE = var.KIT_HDBCLIENT_FILE
-  KIT_SAPHANA_FILE=var.KIT_SAPHANA_FILE
-  KIT_NWHANA_EXPORT=var.KIT_NWHANA_EXPORT
+  KIT_SAPHANA_FILE = var.KIT_SAPHANA_FILE
+  KIT_NWHANA_EXPORT_FILE = var.KIT_NWHANA_EXPORT_FILE
 }
 
 module "precheck-ssh-exec" {
@@ -69,9 +69,6 @@ module "app-vsi" {
   PROFILE		= var.APP_PROFILE
   IMAGE			= var.APP_IMAGE
   SSH_KEYS		= var.SSH_KEYS
-  VOLUME_SIZES	= [ "40" , "128" ]
-  VOL_PROFILE	= "10iops-tier"
-
 }
 
 module "app-ansible-exec-schematics" {

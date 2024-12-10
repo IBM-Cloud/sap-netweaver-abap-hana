@@ -1,3 +1,6 @@
+- name: sapbase.yml
+  ansible.builtin.import_playbook: sapbase.yml
+
 - name: saphana.yml
   ansible.builtin.import_playbook: saphana.yml
 

@@ -1,7 +1,7 @@
 # List SAP PATHS
 resource "local_file" "KIT_SAP_PATHS" {
   content = <<-DOC
-${var.KIT_NWHANA_EXPORT}/*.*
+${var.KIT_NWHANA_EXPORT_FILE}
 ${var.KIT_SAPHANA_FILE}
 ${var.KIT_SAPCAR_FILE}
 ${var.KIT_SWPM_FILE}

@@ -1,7 +1,32 @@
 ---
-#Sapinst product-id
+# Sapinst product-id
 sap_product_id: "NW_ABAP_OneHost:NW750.HDB.ABAP"
 
-#Target files location
+# Target files location
 nwapp_kit: "/usr/sap/trans/kit"
+
+nwinst_dirs:
+  - "{{ nwapp_kit }}"
+  - "{{ nwapp_kit }}/swpm"
+  - "{{ nwapp_kit }}/export"
+  - "{{ nwapp_kit }}/hdbclient"
+nwapp_kits:
+  - nwapp_src: "{{ kit_sapcar_file }}"
+    nwapp_dest: "{{ nwapp_kit }}/sapcar"
+  - nwapp_src: "{{ kit_swpm_file }}"
+    nwapp_dest: "{{ nwapp_kit }}/swpm.sar"
+  - nwapp_src: "{{ kit_sapexe_file }}"
+    nwapp_dest: "{{ nwapp_kit }}/sapexe.sar"
+  - nwapp_src: "{{ kit_sapexedb_file }}"
+    nwapp_dest: "{{ nwapp_kit }}/sapexedb.sar"
+  - nwapp_src: "{{ kit_igsexe_file }}"
+    nwapp_dest: "{{ nwapp_kit }}/igsexe.sar"
+  - nwapp_src: "{{ kit_igshelper_file }}"
+    nwapp_dest: "{{ nwapp_kit }}/igshelper.sar"
+  - nwapp_src: "{{ kit_saphostagent_file }}"
+    nwapp_dest: "{{ nwapp_kit }}/saphostagent.sar"
+  - nwapp_src: "{{ kit_hdbclient_file }}"
+    nwapp_dest: "{{ nwapp_kit }}/hdbclient.sar"
+  - nwapp_src: "{{ kit_nwhana_export_file }}"
+    nwapp_dest: "{{ nwapp_kit }}/export"
 ...

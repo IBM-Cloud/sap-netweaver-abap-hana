@@ -47,7 +47,7 @@ variable "SSH_KEYS" {
 locals {
 	HANA_PROCESSING_TYPE = "All"
 	# HANA_PROCESSING_TYPE with accepted values: "All", "OLAP", "OLTP" "SAP Business One"- if needed for future development
-	ALL_HANA_CERTIFIED_STORAGE = jsondecode(file("${path.root}/files/hana_volume_layout.json"))
+	ALL_HANA_CERTIFIED_STORAGE = jsondecode(file("${path.module}/files/hana_vm_volume_layout.json"))
 	HANA_PROCESSING_TYPE_JSON = replace(trimspace(lower(local.HANA_PROCESSING_TYPE)), " ", "_")
 	PROCESSING_TYPE_FOUND = local.HANA_PROCESSING_TYPE_JSON == "all" ? true : contains(keys(local.ALL_HANA_CERTIFIED_STORAGE["profiles"]["${var.PROFILE}"]["processing_type"]), local.HANA_PROCESSING_TYPE_JSON)
 	OS_FROM_IMAGE = replace(replace(trimspace(lower(var.IMAGE)), "ibm-", ""), "/-amd64-sap-hana-.*/", "")
@@ -61,4 +61,3 @@ locals {
 	VOL_PROFILE = local.PROCESSING_TYPE_FOUND ==  true && local.OS_TYPE_FOUND == true ? flatten([ for k in range(length(local.VOLUMES_STRUCTURE)) : [ [for _ in range(local.VOLUMES_STRUCTURE[k]["disk_count"]) : local.VOLUMES_STRUCTURE[k]["iops"]]]]) : []
 	DISPLAY_CRT_STORAGE = local.PROCESSING_TYPE_FOUND ==  true && local.OS_TYPE_FOUND == true ? { for k, v in local.CURRENT_STORAGE_CERTIFIED : k => { for j, m in v : j => m if j != "lvm" && j != "fs_type" && j != "mount_point" }} : null
 }
-

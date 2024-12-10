@@ -1,104 +1,51 @@
 ---
-- name: Create /usr/sap/kit directory
+- name: Create directories for SAP NetWeaver Application Server kit on target
   file:
-    path: "{{ nwapp_kit }}"
+    path: "{{ nwinst_dir }}"
     state: directory
     mode: 0777
+  loop: "{{ nwinst_dirs }}"
+  loop_control:
+    loop_var: nwinst_dir
 
-- name: Create /usr/sap/trans/kit/swpm directory
-  file:
-    path: "{{ nwapp_kit }}/swpm"
-    state: directory
-    mode: 0777
-
-- name: Create /usr/sap/trans/kit/export directory
-  file:
-    path: "{{ nwapp_kit }}/export"
-    state: directory
-    mode: 0777
-
-- name: Create /usr/sap/trans/kit/hdbclient directory
-  file:
-    path: "{{ nwapp_kit }}/hdbclient"
-    state: directory
-    mode: 0777
-
-- name: Copy "{{ kit_sapcar_file }}" kit to target
+- name: Copy SAP NetWeaver Application Server kit to /usr/sap/trans/kit
   copy:
-    src: "{{ kit_sapcar_file }}"
-    dest: "{{ nwapp_kit }}/sapcar"
+    src: "{{ kit_item.nwapp_src }}"
+    dest: "{{ kit_item.nwapp_dest }}"
     owner: root
     group: root
     mode: 0777
+  loop: "{{ nwapp_kits }}"
+  loop_control:
+    loop_var: kit_item
 
-- name: Copy "{{ kit_swpm_file }}" kit to target
-  copy:
-    src: "{{ kit_swpm_file }}"
-    dest: "{{ nwapp_kit }}/swpm.sar"
-    owner: root
-    group: root
-    mode: 0777
-
-- name: Copy "{{ kit_sapexe_file }}" kit to target
-  copy:
-    src: "{{ kit_sapexe_file }}"
-    dest: "{{ nwapp_kit }}/sapexe.sar"
-    owner: root
-    group: root
-    mode: 0777
-
-- name: Copy "{{ kit_sapexedb_file }}" kit to target
-  copy:
-    src: "{{ kit_sapexedb_file }}"
-    dest: "{{ nwapp_kit }}/sapexedb.sar"
-    owner: root
-    group: root
-    mode: 0777
-
-- name: Copy "{{ kit_igsexe_file }}" kit to target
-  copy:
-    src: "{{ kit_igsexe_file }}"
-    dest: "{{ nwapp_kit }}/igsexe.sar"
-    owner: root
-    group: root
-    mode: 0777
-
-- name: Copy "{{ kit_igshelper_file }}" kit to target
-  copy:
-    src: "{{ kit_igshelper_file }}"
-    dest: "{{ nwapp_kit }}/igshelper.sar"
-    owner: root
-    group: root
-    mode: 0777
-
-- name: Copy "{{ kit_saphotagent_file }}" kit to target
-  copy:
-    src: "{{ kit_saphotagent_file }}"
-    dest: "{{ nwapp_kit }}/saphotagent.sar"
-    owner: root
-    group: root
-    mode: 0777
-
-- name: Copy "{{ kit_hdbclient_file }}" kit to target
-  copy:
-    src: "{{ kit_hdbclient_file }}"
-    dest: "{{ nwapp_kit }}/hdbclient.sar"
-    owner: root
-    group: root
-    mode: 0777
+- name: Check if HDBClient archive content was already extracted
+  stat:
+    path: "{{ nwapp_kit }}/hdbclient/hdbclientreg"
+  register: hdbclientfile_status
 
 - name: Extract HDBClient archive
   command: "{{ nwapp_kit }}/sapcar -xf {{ nwapp_kit }}/hdbclient.sar -R {{ nwapp_kit }}/hdbclient"
+  when: not hdbclientfile_status.stat.exists
 
-- name: Copy "{{ kit_nwhana_export }}" kit to target
-  copy:
-    src: "{{ kit_nwhana_export }}/"
-    dest: "{{ nwapp_kit }}/export"
-    owner: root
-    group: root
-    mode: 0777
+- name: Check if Export archive content was already extracted
+  stat:
+    path: "{{ nwapp_kit }}/export/DATA_UNITS/LABELIDX.ASC"
+  register: expfile_status
+
+- name: Extract the export ZIP file to target
+  unarchive:
+    src: "{{ nwapp_kit }}/export/{{ kit_nwhana_export_file.split('/')[-1] }}"
+    dest: "{{ nwapp_kit }}/export/"
+    remote_src: yes
+  when: not expfile_status.stat.exists
+
+- name: Check if SWPM archive content was already extracted
+  stat:
+    path: "{{ nwapp_kit }}/swpm/sapinst"
+  register: file_status
 
 - name: Extract SWPM archive
   command: "{{ nwapp_kit }}/sapcar -xf {{ nwapp_kit }}/swpm.sar -R {{ nwapp_kit }}/swpm"
-
+  when: not file_status.stat.exists
 ...

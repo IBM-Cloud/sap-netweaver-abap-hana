@@ -1,0 +1,7 @@
+---
+- hosts: app_host,hdb_host
+  gather_facts: yes
+  any_errors_fatal: true
+  roles:
+    - sapbasereq
+...

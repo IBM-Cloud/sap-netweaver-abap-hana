@@ -9,11 +9,11 @@
     reload: yes
   loop:
     - { name: vm.max_map_count, value: 2147483647 }
-    - { name: kernel.pid_max, value: 4194304 }
+    # - { name: kernel.pid_max, value: 4194304 }
     - { name: net.core.somaxconn, value: 4096 }
     - { name: net.ipv4.tcp_max_syn_backlog, value: 8192 }
     - { name: net.ipv4.tcp_slow_start_after_idle, value: 0 }
-    - { name: net.ipv4.tcp_syn_retries, value: 8 } 
+    - { name: net.ipv4.tcp_syn_retries, value: 8 }
   loop_control:
-    loop_var: kernel_param  
+    loop_var: kernel_param
 ...

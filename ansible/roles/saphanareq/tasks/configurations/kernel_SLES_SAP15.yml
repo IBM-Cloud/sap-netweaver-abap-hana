@@ -12,5 +12,5 @@
     - { name: net.ipv4.tcp_max_syn_backlog, value: 8192 }
     - { name: net.ipv4.tcp_slow_start_after_idle, value: 0 }
   loop_control:
-    loop_var: kernel_param  
+    loop_var: kernel_param
 ...

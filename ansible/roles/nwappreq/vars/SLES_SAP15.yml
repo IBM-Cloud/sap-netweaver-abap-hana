@@ -1,18 +1,13 @@
 ---
-nwapp_required_packages:
-  - lvm2
-  - uuidd
-  - nfs-utils
+ap_required_packages:
+  - libgcc_s1
+  - libstdc++6
+  - libatomic1
 
-nwapp_required_configurations:
-  - "update_SLES_SAP"
+ap_required_configurations:
   - "reqpkg"
-  - "umask_SLES"
-  - "hostname"
-  - "reboot"
-  - "filesystems"
+  - "tmpfs"
   - "limits"
-  - "tmpfiles"
-  - "uuidd"
   - "saptune"
-... 
+  - "reboot"
+...
